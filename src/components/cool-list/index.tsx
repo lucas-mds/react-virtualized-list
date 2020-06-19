@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // Modules | Packages 
 import axios from 'axios';
-import { TextField } from '@material-ui/core';
+import { TextField, CircularProgress, Typography } from '@material-ui/core';
 
 // My Components
 import List from '../list';
@@ -17,7 +17,7 @@ interface RowItem {
 }
 
 interface ComponentState {
-  loading: false,
+  loading: boolean,
   searchTerm: string,
   searchTerms: Array<string>,
   searchNames: Array<string>,
@@ -30,7 +30,7 @@ interface ComponentState {
 
 export default function () {
   const [state, setState] = useState<ComponentState>({
-    loading: false,
+    loading: true,
     searchTerm: '',
     searchTerms: [],
     searchNames: [],
@@ -45,7 +45,8 @@ export default function () {
   // Load Initial data
   useEffect(() =>{
     axios.get('https://random-persons.herokuapp.com/users')
-      .then(response => setState( state => ({ ...state, defaultRows: response.data.data, filteredRows: response.data.data })))
+      .then(response => setState( state => ({ ...state, loading: false, defaultRows: response.data.data, filteredRows: response.data.data })))
+      .catch(() => setState(state => ({ ...state, loading: false })));
   }, [])
 
   const filterRows = () => {
@@ -120,27 +121,37 @@ export default function () {
 
   return (
     <>
-      <FiltersContainer>
-        <TextField
-          id="searchString"
-          label="Search"
-          placeholder="Name 45"
-          value={state.searchTerm}
-          onChange={event => setState({ ...state, searchTerm: event.target.value })}
-          onKeyUp={debounceSearch}
-        />
+      {
+        !state.loading ? (
+          <>
+            <FiltersContainer>
+              <TextField
+                id="searchString"
+                label="Search"
+                placeholder="Name 45"
+                value={state.searchTerm}
+                onChange={event => setState({ ...state, searchTerm: event.target.value })}
+                onKeyUp={debounceSearch}
+              />
 
-        <RangeSlider
-          min={0}
-          max={120}
-          onChange={(sliderValue: any) => {
-            debounceSlider(sliderValue)
-          }}
-          // width={'60%'}
-        />
-      </FiltersContainer>
-
-      <List items={state.filteredRows.filter((row: any) => row.age >= state.sliderValue[0] && row.age <= state.sliderValue[1] )}/>
+              <RangeSlider
+                min={0}
+                max={120}
+                onChange={(sliderValue: any) => {
+                  debounceSlider(sliderValue)
+                }}
+                // width={'60%'}
+              />
+            </FiltersContainer>
+            <List items={state.filteredRows.filter((row: any) => row.age >= state.sliderValue[0] && row.age <= state.sliderValue[1] )}/>
+          </>
+        ) : (
+          <Typography component="div" align="center">
+            <CircularProgress />
+          </Typography>
+        )
+        
+      }
     </>
   )
 };
