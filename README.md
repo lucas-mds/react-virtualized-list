@@ -8,6 +8,8 @@ Its possible to narrow down the results by using the slider to define a date ran
 
 <img src="demo.gif" width="600">
 
+This was made with Material UI, React Virtualized, Styled Components and Typescript.
+
 
 # MIT License
 
